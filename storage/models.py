@@ -14,11 +14,11 @@ class Movie(models.Model):
     runtime = models.PositiveIntegerField(null=True, blank=True)
     genre = models.CharField(max_length=255, null=True, blank=True)
     director = models.ManyToManyField(
-        Cast, null=True, blank=True, related_name='directors')
+        Cast, blank=True, related_name='directors')
     writer = models.ManyToManyField(
-        Cast, null=True, blank=True, related_name='writers')
+        Cast, blank=True, related_name='writers')
     actor = models.ManyToManyField(
-        Cast, null=True, blank=True, related_name='actors')
+        Cast, blank=True, related_name='actors')
     plot = models.TextField(null=True, blank=True)
     language = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
@@ -39,7 +39,6 @@ class Profile(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
-    image = models.ImageField()
 
 # class List(models.Model):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL,
