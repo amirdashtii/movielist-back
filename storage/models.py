@@ -4,6 +4,12 @@ from django.db import models
 class Cast(models.Model):
     full_name = models.CharField(max_length=255, unique=True)
 
+    def __str__(self) -> str:
+        return self.full_name
+    
+    class Meta:
+        ordering = ['full_name']
+
 
 class Movie(models.Model):
     title = models.CharField(max_length=255)
@@ -32,6 +38,11 @@ class Movie(models.Model):
         max_length=20, unique=True, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
 
+    def __str__(self) -> str:
+        return self.title
+    
+    class Meta:
+        ordering = ['title']
 
 class Profile(models.Model):
     first_name = models.CharField(max_length=255)
@@ -39,6 +50,12 @@ class Profile(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=255)
     birth_date = models.DateField(null=True)
+
+    def __str__(self) -> str:
+        return f'{self.first_name} {self.last_name}'
+    
+    class Meta:
+        ordering = ['first_name', 'last_name']
 
 # class List(models.Model):
 #     user = models.ForeignKey(settings.AUTH_USER_MODEL,
