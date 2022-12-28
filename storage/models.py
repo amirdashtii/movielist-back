@@ -1,5 +1,5 @@
 from django.db import models
-
+from uuid import uuid4
 
 class Cast(models.Model):
     full_name = models.CharField(max_length=255, unique=True)
@@ -23,14 +23,13 @@ class Movie(models.Model):
         Cast, blank=True, related_name='directors')
     writer = models.ManyToManyField(
         Cast, blank=True, related_name='writers')
-    actor = models.ManyToManyField(
+    actors = models.ManyToManyField(
         Cast, blank=True, related_name='actors')
     plot = models.TextField(null=True, blank=True)
     language = models.CharField(max_length=255, null=True, blank=True)
     country = models.CharField(max_length=255, null=True, blank=True)
     awards = models.TextField(null=True, blank=True)
     poster = models.URLField(max_length=200, null=True, blank=True)
-    ratings = models.TextField(null=True, blank=True)
     metascore = models.PositiveIntegerField(null=True, blank=True)
     imdbrating = models.DecimalField(
         max_digits=2, decimal_places=1, null=True, blank=True)

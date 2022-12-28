@@ -29,7 +29,7 @@ class CastAdmin(admin.ModelAdmin):
    
 @admin.register(Movie)
 class MovieAdmin(admin.ModelAdmin):
-    autocomplete_fields = ['actor','director','writer']
+    autocomplete_fields = ['actors','director','writer']
     list_display = ['title', 'year']
     list_per_page: 10
     ordering = ['title', 'year']
