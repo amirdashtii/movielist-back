@@ -12,9 +12,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 from .filters import MovieFilter
-from .models import Cast, Movie, Profile
+from .models import Cast, Movie, Profile, List, ListItem
 from .pagination import DefaultPagination
-from .serializers import CastSerializer, MovieSerializer, ProfileSerializer
+from .serializers import CastSerializer, MovieSerializer, ProfileSerializer, ListSerializer, ListItemSerializer, AddListItemSerializer, UpdateListItemSerializer
 from movielist import config
 
 
@@ -38,9 +38,31 @@ class MovieViewSet(ModelViewSet):
 class ProfileViewSet(ModelViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+
+
+class ListViewSet(ModelViewSet):
+    queryset = List.objects.prefetch_related('items__movie').all()
+    serializer_class = ListSerializer
+
+
+class ListItemViwSet(ModelViewSet):
+    http_method_names = ['get', 'post','patch','delete']
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AddListItemSerializer
+        elif self.request.method == 'PATCH':
+            return UpdateListItemSerializer
+        return ListItemSerializer
+
+    def get_serializer_context(self):
+        return {'list_id': self.kwargs['list_pk']}
+
+    def get_queryset(self):
+        return ListItem.objects.filter(list_id=self.kwargs['list_pk']).select_related('movie')
+
+
 # @csrf_exempt
-
-
 @api_view(['POST'])
 def search_movie(request):
     title = request.POST.get('title')
@@ -60,10 +82,10 @@ class FindMovie(APIView):
         apikey = config.apikey
         url = 'http://www.omdbapi.com/'
         payload = {'i': imdbid, 't': title, 'y': year,
-                'plot': 'full', 'r': 'json', 'apikey': apikey}
+                   'plot': 'full', 'r': 'json', 'apikey': apikey}
         result = requests.get(url, params=payload).json()
         values = {k.lower(): v for k, v in result.items()
-                } if result['Response'] == 'True' else result['Error']
+                  } if result['Response'] == 'True' else result['Error']
         values["runtime"] = values["runtime"].replace(' min', '')
         return Response(values)
 
@@ -81,7 +103,6 @@ class FindMovie(APIView):
 #               } if result['Response'] == 'True' else result['Error']
 #     values["runtime"] = values["runtime"].replace(' min', '')
 #     return Response(values)
-
 
 
 # @csrf_exempt

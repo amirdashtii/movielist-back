@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from .models import Cast, Movie, Profile
+from .models import Cast, Movie, Profile, List, ListItem
 
 
 # class CreatableSlugRelatedField(serializers.SlugRelatedField):
@@ -48,3 +48,65 @@ class ProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = Profile
         fields = ['id', 'first_name', 'last_name']
+
+
+class ListItemSerializer(serializers.ModelSerializer):
+    movie = MovieSerializer()
+
+    class Meta:
+        model = ListItem
+        fields = ['id', 'list', 'movie']
+
+
+class AddListItemSerializer(serializers.ModelSerializer):
+    movie_id = serializers.IntegerField()
+
+    def validate_movie_id(self, value):
+        if not Movie.objects.filter(pk=value).exists():
+            raise serializers.ValidationError(
+                'No movie with the given ID was found.')
+        return value
+
+    def save(self, **kwargs):
+        list_id = self.context['list_id']
+        movie_id = self.validated_data['movie_id']
+
+        try:
+            list_item = ListItem.objects.get(
+                list_id=list_id, movie_id=movie_id)
+        except ListItem.DoesNotExist:
+            self.instance = ListItem.objects.create(
+                list_id=list_id, **self.validated_data)
+        return self.instance
+
+    class Meta:
+        model = ListItem
+        fields = ['id', 'movie_id']
+
+
+class UpdateListItemSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ListItem
+        fields = ['movie']
+
+
+class SampelListItemSerializer(serializers.ModelSerializer):
+    movie = MovieSerializer()
+
+    class Meta:
+        model = ListItem
+        fields = ['movie']
+
+
+class ListSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+    items = SampelListItemSerializer(many=True, read_only=True)
+    total_movie = serializers.SerializerMethodField()
+
+    def get_total_movie(self, list: list):
+        return (list.items.count())
+
+    class Meta:
+        model = List
+        fields = ['id', 'name', 'description', 'items', 'total_movie']
