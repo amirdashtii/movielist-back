@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/4.1/ref/settings/
 """
 
 from pathlib import Path
+from datetime import timedelta
 from . import config
 
 
@@ -41,7 +42,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django_filters',
     'rest_framework',
+    'djoser',
     'storage',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -132,4 +135,42 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
     'COERCE_DECIMAL_TO_STRING': False,
+    # 'DEFAULT_PERMISSION_CLASSES': [
+    #     'rest_framework.permissions.IsAuthenticated',
+    # ],
+
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
 }
+
+SIMPLE_JWT = {
+    'AUTH_HEADER_TYPES': ('JWT',),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+    # 'AUTH_TOKEN_CLASSES': (
+    #     'rest_framework_simplejwt.tokens.AccessToken',
+    # )
+}
+
+AUTH_USER_MODEL = 'core.User'
+
+DJOSER = {
+    # # 'LOGIN_FIELS': 'email',
+    # 'USER_CREATE_PASSWORD_RETYPE': True,
+    # 'USERNAME_CHANGED_EMAIL_CONFIRMATION': True,
+    # 'PASSWORD_CHANGED_EMAIL_CONFIRMATION': True,
+    # 'SEND_CONFIRMATION_EMAIL': True,
+    # 'SET_USERNAME_RETYPE': True,
+    # 'SET_PASSWORD_RETYPE': True,
+    # 'PASSWORD_RESET_CONFIRM_URL': 'password/reset/confirm/{uid}/{token}',
+    # 'USERNAME_RESET_CONFIRM_URL': 'username/reset/confirm/{uid}/{token}',
+    # 'ACTIVATION_URL': 'activation/{uid}/{token}',
+    # 'SEND_ACTIVATION_EMAIL': True,
+    # 'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
+    # 'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000'],
+
+    'SERIALIZERS': {
+        'user_create': 'core.serializers.UserCreateSerializer',
+        'current_user': 'core.serializers.UserSerializer',
+    }
+} 

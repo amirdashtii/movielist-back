@@ -40,5 +40,6 @@ class MovieAdmin(admin.ModelAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ['first_name', 'last_name']
     list_per_page: 10
-    ordering = ['first_name', 'last_name']
+    list_select_related = ['user']
+    ordering = ['user__first_name', 'user__last_name']
     

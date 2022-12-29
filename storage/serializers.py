@@ -45,9 +45,11 @@ class MovieSerializer(serializers.ModelSerializer):
 
 
 class ProfileSerializer(serializers.ModelSerializer):
+    user_id = serializers.IntegerField(read_only=True)
+
     class Meta:
         model = Profile
-        fields = ['id', 'first_name', 'last_name']
+        fields = ['id', 'user_id', 'phone', 'birth_date']
 
 
 class ListItemSerializer(serializers.ModelSerializer):
@@ -55,7 +57,7 @@ class ListItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ListItem
-        fields = ['id', 'list', 'movie']
+        fields = ['id', 'movie']
 
 
 class AddListItemSerializer(serializers.ModelSerializer):
@@ -109,4 +111,4 @@ class ListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = List
-        fields = ['id', 'name', 'description', 'items', 'total_movie']
+        fields = ['id', 'user', 'name', 'description', 'items', 'total_movie']

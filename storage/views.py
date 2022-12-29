@@ -5,12 +5,14 @@ from django.shortcuts import get_object_or_404
 from django.views.decorators.csrf import csrf_exempt
 from django_filters.rest_framework import DjangoFilterBackend
 from json import JSONEncoder
+from rest_framework.decorators import action
 from rest_framework.decorators import api_view
 from rest_framework.filters import SearchFilter, OrderingFilter
+from rest_framework.mixins import CreateModelMixin, RetrieveModelMixin, UpdateModelMixin
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from .filters import MovieFilter
 from .models import Cast, Movie, Profile, List, ListItem
 from .pagination import DefaultPagination
@@ -35,18 +37,41 @@ class MovieViewSet(ModelViewSet):
                        'director__full_name', 'writer__full_name']
 
 
-class ProfileViewSet(ModelViewSet):
+class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
     queryset = Profile.objects.all()
     serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    @action(detail=False, methods=['GET', 'PUT'])
+    def me(self, request):
+        (profile, created) = Profile.objects.get_or_create(user_id=request.user.id)
+        if request.method == 'GET':
+            serializer = ProfileSerializer(profile)
+            return Response(serializer.data)
+        elif request.method == 'PUT':
+            serializer = ProfileSerializer(profile, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
 
 class ListViewSet(ModelViewSet):
-    queryset = List.objects.prefetch_related('items__movie').all()
+    # queryset = List.objects.prefetch_related('items__movie').all()
     serializer_class = ListSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.is_staff:
+            return List.objects.prefetch_related('items__movie').all()
+
+        (profile_id, created) = Profile.objects.only(
+            'id').get_or_create(user_id=user.id)
+        return List.objects.filter(profile_id=profile_id)
 
 
 class ListItemViwSet(ModelViewSet):
-    http_method_names = ['get', 'post','patch','delete']
+    http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
