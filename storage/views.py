@@ -44,7 +44,7 @@ class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gen
 
     @action(detail=False, methods=['GET', 'PUT'])
     def me(self, request):
-        (profile, created) = Profile.objects.get_or_create(user_id=request.user.id)
+        profile = Profile.objects.get(user_id=request.user.id)
         if request.method == 'GET':
             serializer = ProfileSerializer(profile)
             return Response(serializer.data)
@@ -87,16 +87,15 @@ class ListItemViwSet(ModelViewSet):
         return ListItem.objects.filter(list_id=self.kwargs['list_pk']).select_related('movie')
 
 
-# @csrf_exempt
-@api_view(['POST'])
-def search_movie(request):
-    title = request.POST.get('title')
-    year = request.POST.get('year')
-    apikey = config.apikey
-    url = 'http://www.omdbapi.com/'
-    payload = {'s': title, 'y': year, 'r': 'json', 'apikey': apikey}
-    result = requests.get(url, params=payload).json()
-    return Response(result)
+class SearchMovie(APIView):
+    def post(self, request):
+        title = request.POST.get('title')
+        year = request.POST.get('year')
+        apikey = config.apikey
+        url = 'http://www.omdbapi.com/'
+        payload = {'s': title, 'y': year, 'r': 'json', 'apikey': apikey}
+        result = requests.get(url, params=payload).json()
+        return Response(result)
 
 
 class FindMovie(APIView):
@@ -111,52 +110,8 @@ class FindMovie(APIView):
         result = requests.get(url, params=payload).json()
         values = {k.lower(): v for k, v in result.items()
                   } if result['Response'] == 'True' else result['Error']
-        values["actors"]=values["actors"].split(", ")
-        values["director"]=values["director"].split(", ")
-        values["writer"]=values["writer"].split(", ")
-        values["runtime"] = values["runtime"].replace(' min', '')
+        values["actors"] = values["actors"].split(", ")
+        values["director"] = values["director"].split(", ")
+        values["writer"] = values["writer"].split(", ")
         return Response(values)
 
-# @api_view(['POST'])
-# def find_movie(request):
-#     imdbid = request.POST.get('imdbid')
-#     title = request.POST.get('title')
-#     year = request.POST.get('year')
-#     apikey = config.apikey
-#     url = 'http://www.omdbapi.com/'
-#     payload = {'i': imdbid, 't': title, 'y': year,
-#                'plot': 'full', 'r': 'json', 'apikey': apikey}
-#     result = requests.get(url, params=payload).json()
-#     values = {k.lower(): v for k, v in result.items()
-#               } if result['Response'] == 'True' else result['Error']
-#     values["runtime"] = values["runtime"].replace(' min', '')
-#     return Response(values)
-
-
-# @csrf_exempt
-@api_view(['POST'])
-def add_movie_to_list(request):
-    print(request)
-
-    # movie = find_movie(request)
-    # serializer = MovieSerializer(data=request.data)
-    # serializer.validated_data
-    # return Response(request)
-
-    print(movie.content, '-----------')
-
-    # actors = movie['actors'].split(", ")
-    # print(actors)
-
-    # myobj = {'full_name': 'amiraaaa'}
-    # aaa = {'Authorization': 'JWT eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ0b2tlbl90eXBlIjoiYWNjZXNzIiwiZXhwIjoxNjcxMzA2NzkwLCJqdGkiOiI0NTAwZmUwMzQxZDQ0MWViYjFlZjU0YWJmYmE3Yjg1YSIsInVzZXJfaWQiOjF9.KbmINiv3uCEG9Ca3VwdPwSOtjn7KdWp-HU4FdAu0dl4'}
-    # requests.post('http://127.0.0.1:8000/storage/actor/', data=myobj, headers=aaa)
-
-    # return ActorViewSet.as_view()(request, actors[0])
-
-    # for actor in actors:
-    #     actor,created = Actor.objects.get_or_create(full_name=actor)
-    # print(actor)
-    # print(movie['director'])
-    # print(movie['writer'])
-    return movie

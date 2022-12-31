@@ -14,7 +14,7 @@ lists_router.register('items', views.ListItemViwSet, basename='list-items')
 
 
 urlpatterns = [
-    path('add-movie-to-list/', views.add_movie_to_list),
+    path('search-movie/', views.SearchMovie.as_view()),
     path('find-movie/', views.FindMovie.as_view()),
 ]
 

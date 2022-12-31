@@ -111,4 +111,4 @@ class ListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = List
-        fields = ['id', 'user', 'name', 'description', 'items', 'total_movie']
+        fields = ['id', 'profile', 'name', 'description', 'items', 'total_movie']
