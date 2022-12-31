@@ -3,15 +3,15 @@ from rest_framework import serializers
 from .models import Cast, Movie, Profile, List, ListItem
 
 
-# class CreatableSlugRelatedField(serializers.SlugRelatedField):
-#     def to_internal_value(self, data):
-#         try:
-#             return self.get_queryset().get(**{self.slug_field: data})
-#         except ObjectDoesNotExist:
-#             # to create the object
-#             return self.get_queryset().create(**{self.slug_field: data})
-#         except (TypeError, ValueError):
-#             self.fail('invalid')
+class CreatableSlugRelatedField(serializers.SlugRelatedField):
+    def to_internal_value(self, data):
+        try:
+            return self.get_queryset().get(**{self.slug_field: data})
+        except ObjectDoesNotExist:
+            # to create the object
+            return self.get_queryset().create(**{self.slug_field: data})
+        except (TypeError, ValueError):
+            self.fail('invalid')
 
 
 class CastSerializer(serializers.ModelSerializer):
@@ -22,20 +22,20 @@ class CastSerializer(serializers.ModelSerializer):
 
 class MovieSerializer(serializers.ModelSerializer):
 
-    actors = serializers.SlugRelatedField(
+    actors = CreatableSlugRelatedField(
         many=True,
-        read_only=True,
-        slug_field='full_name'
+        slug_field='full_name',
+        queryset=Cast.objects.all()
     )
-    director = serializers.SlugRelatedField(
+    director = CreatableSlugRelatedField(
         many=True,
-        read_only=True,
-        slug_field='full_name'
+        slug_field='full_name',
+        queryset=Cast.objects.all()
     )
-    writer = serializers.SlugRelatedField(
+    writer = CreatableSlugRelatedField(
         many=True,
-        read_only=True,
-        slug_field='full_name'
+        slug_field='full_name',
+        queryset=Cast.objects.all()
     )
 
     class Meta:

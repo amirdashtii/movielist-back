@@ -36,7 +36,7 @@ class Movie(models.Model):
     imdbrating = models.DecimalField(
         max_digits=2, decimal_places=1, null=True, blank=True)
     imdbid = models.CharField(
-        max_length=20, unique=True, null=True, blank=True)
+        max_length=20, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
 
     def __str__(self) -> str:

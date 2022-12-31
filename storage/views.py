@@ -111,6 +111,9 @@ class FindMovie(APIView):
         result = requests.get(url, params=payload).json()
         values = {k.lower(): v for k, v in result.items()
                   } if result['Response'] == 'True' else result['Error']
+        values["actors"]=values["actors"].split(", ")
+        values["director"]=values["director"].split(", ")
+        values["writer"]=values["writer"].split(", ")
         values["runtime"] = values["runtime"].replace(' min', '')
         return Response(values)
 
