@@ -112,3 +112,17 @@ class ListSerializer(serializers.ModelSerializer):
     class Meta:
         model = List
         fields = ['id', 'profile', 'name', 'description', 'items', 'total_movie']
+
+class CreateListSerializer(serializers.Serializer):
+    name = serializers.CharField(max_length=255)
+    description = serializers.CharField()
+
+    def save(self, **kwargs):
+        profile = Profile.objects.get(
+            user_id=self.context['user_id'])
+        self.instance = List.objects.create(profile=profile, **self.validated_data)
+        return self.instance
+        
+    class Meta:
+        model = List
+        fields = ['name', 'description']

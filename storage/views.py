@@ -13,10 +13,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
-from .filters import MovieFilter
+from .filters import ListItemFilter, MovieFilter
 from .models import Cast, Movie, Profile, List, ListItem
 from .pagination import DefaultPagination
-from .serializers import CastSerializer, MovieSerializer, ProfileSerializer, ListSerializer, ListItemSerializer, AddListItemSerializer, UpdateListItemSerializer
+from .serializers import CastSerializer, CreateListSerializer, MovieSerializer, ProfileSerializer, ListSerializer, ListItemSerializer, AddListItemSerializer, UpdateListItemSerializer
 from movielist import config
 
 
@@ -57,8 +57,22 @@ class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gen
 
 class ListViewSet(ModelViewSet):
     # queryset = List.objects.prefetch_related('items__movie').all()
-    serializer_class = ListSerializer
+    # serializer_class = ListSerializer
     permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateListSerializer(
+            data=request.data,
+            context={'user_id': self.request.user.id})
+        serializer.is_valid(raise_exception=True)
+        list = serializer.save()
+        serializer = ListSerializer(list)
+        return Response(serializer.data)
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return CreateListSerializer
+        return ListSerializer
 
     def get_queryset(self):
         user = self.request.user
@@ -71,6 +85,14 @@ class ListViewSet(ModelViewSet):
 
 
 class ListItemViwSet(ModelViewSet):
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_class = ListItemFilter
+    pagination_class = DefaultPagination
+    search_fields = ['movie__title', 'movie__actors__full_name',
+                     'movie__director__full_name', 'movie__writer__full_name']
+    ordering_fields = ['movie__title', 'movie__year',
+                       'movie__imdbrating', 'movie__type']
+
     http_method_names = ['get', 'post', 'patch', 'delete']
 
     def get_serializer_class(self):
@@ -89,8 +111,8 @@ class ListItemViwSet(ModelViewSet):
 
 class SearchMovie(APIView):
     def post(self, request):
-        title = request.POST.get('title')
-        year = request.POST.get('year')
+        title = request.data['title']
+        year = request.data['year']
         apikey = config.apikey
         url = 'http://www.omdbapi.com/'
         payload = {'s': title, 'y': year, 'r': 'json', 'apikey': apikey}
@@ -100,13 +122,10 @@ class SearchMovie(APIView):
 
 class FindMovie(APIView):
     def post(self, request):
-        imdbid = request.POST.get('imdbid')
-        title = request.POST.get('title')
-        year = request.POST.get('year')
+        imdbid = request.data['imdbid']
         apikey = config.apikey
         url = 'http://www.omdbapi.com/'
-        payload = {'i': imdbid, 't': title, 'y': year,
-                   'plot': 'full', 'r': 'json', 'apikey': apikey}
+        payload = {'i': imdbid, 'plot': 'full', 'r': 'json', 'apikey': apikey}
         result = requests.get(url, params=payload).json()
         values = {k.lower(): v for k, v in result.items()
                   } if result['Response'] == 'True' else result['Error']
@@ -115,3 +134,17 @@ class FindMovie(APIView):
         values["writer"] = values["writer"].split(", ")
         return Response(values)
 
+
+class AddMovie(APIView):
+    def post(self, request):
+        imdbid = request.data['imdbid']
+        try:
+            movie_id = Movie.objects.get(imdbid=imdbid).id
+        except Movie.DoesNotExist:
+            movie = FindMovie().post(self.request).data
+            serializer = MovieSerializer(data=movie)
+            serializer.is_valid(raise_exception=True)
+            movie = serializer.save()
+            movie_id = movie.id
+
+        return Response({'movie_id': movie_id})
