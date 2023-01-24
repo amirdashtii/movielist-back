@@ -96,7 +96,7 @@ class ListItemViwSet(ModelViewSet):
     search_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
                      'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type']
     ordering_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
-                       'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type']
+                       'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type', 'movie__added_at']
 
     http_method_names = ['get', 'post', 'patch', 'delete']
 

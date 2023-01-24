@@ -31,7 +31,8 @@ class Movie(models.Model):
     rated = models.CharField(max_length=255, null=True, blank=True)
     released = models.CharField(max_length=255, null=True, blank=True)
     runtime = models.CharField(max_length=255, null=True, blank=True)
-    genre = models.CharField(max_length=255, null=True, blank=True)
+    genre = models.ManyToManyField(
+        Genre, blank=True, related_name='genre')
     director = models.ManyToManyField(
         Cast, blank=True, related_name='directors')
     writer = models.ManyToManyField(
@@ -49,6 +50,7 @@ class Movie(models.Model):
     imdbid = models.CharField(
         max_length=255, unique=True, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
+    added_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.title
@@ -83,6 +85,7 @@ class List(models.Model):
     profile = models.ForeignKey(Profile, on_delete=models.PROTECT)
     name = models.CharField(max_length=255)
     description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class ListItem(models.Model):
