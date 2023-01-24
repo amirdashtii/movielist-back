@@ -14,6 +14,16 @@ class Cast(models.Model):
         ordering = ['full_name']
 
 
+class Genre(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+
+    def __str__(self) -> str:
+        return self.name
+
+    class Meta:
+        ordering = ['name']
+
+
 class Movie(models.Model):
     title = models.CharField(max_length=255)
     orginal_title = models.CharField(max_length=255, null=True, blank=True)

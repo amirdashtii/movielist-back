@@ -199,11 +199,12 @@ DJOSER = {
     'ACTIVATION_URL': 'activation/{uid}/{token}',
     'SEND_ACTIVATION_EMAIL': True,
     'SOCIAL_AUTH_TOKEN_STRATEGY': 'djoser.social.token.jwt.TokenStrategy',
-    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': ['http://localhost:8000'],
+    'SOCIAL_AUTH_ALLOWED_REDIRECT_URIS': config.SOCIAL_AUTH_ALLOWED_REDIRECT_URIS,
 
     'SERIALIZERS': {
         'user_create': 'core.serializers.UserCreateSerializer',
         'current_user': 'core.serializers.UserSerializer',
+        'user_delete': 'djoser.serializers.UserDeleteSerializer'
     }
 }
 CORS_ORIGIN_ALLOW_ALL = True

@@ -1,6 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers
-from .models import Cast, Movie, Profile, List, ListItem
+from .models import Cast, Movie, Profile, List, ListItem, Genre
 
 
 class CreatableSlugRelatedField(serializers.SlugRelatedField):
@@ -20,6 +20,12 @@ class CastSerializer(serializers.ModelSerializer):
         fields = ['id', 'full_name']
 
 
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Genre
+        fields = ['id', 'name']
+
+
 class MovieSerializer(serializers.ModelSerializer):
 
     actors = CreatableSlugRelatedField(
@@ -36,6 +42,11 @@ class MovieSerializer(serializers.ModelSerializer):
         many=True,
         slug_field='full_name',
         queryset=Cast.objects.all()
+    )
+    genre = CreatableSlugRelatedField(
+        many=True,
+        slug_field='name',
+        queryset=Genre.objects.all()
     )
 
     class Meta:
@@ -111,7 +122,9 @@ class ListSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = List
-        fields = ['id', 'profile', 'name', 'description', 'items', 'total_movie']
+        fields = ['id', 'profile', 'name',
+                  'description', 'items', 'total_movie']
+
 
 class CreateListSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
@@ -120,9 +133,10 @@ class CreateListSerializer(serializers.Serializer):
     def save(self, **kwargs):
         profile = Profile.objects.get(
             user_id=self.context['user_id'])
-        self.instance = List.objects.create(profile=profile, **self.validated_data)
+        self.instance = List.objects.create(
+            profile=profile, **self.validated_data)
         return self.instance
-        
+
     class Meta:
         model = List
         fields = ['name', 'description']

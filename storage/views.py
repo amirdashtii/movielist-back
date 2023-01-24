@@ -14,9 +14,11 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet, GenericViewSet
 from .filters import ListItemFilter, MovieFilter
-from .models import Cast, Movie, Profile, List, ListItem
+from .models import Cast, Movie, Profile, List, ListItem, Genre
 from .pagination import DefaultPagination
-from .serializers import CastSerializer, CreateListSerializer, MovieSerializer, ProfileSerializer, ListSerializer, ListItemSerializer, AddListItemSerializer, UpdateListItemSerializer
+from .serializers import (CastSerializer, CreateListSerializer, MovieSerializer, ProfileSerializer,
+                          ListSerializer, ListItemSerializer, AddListItemSerializer, UpdateListItemSerializer,
+                          GenreSerializer)
 from movielist import config
 
 
@@ -25,16 +27,21 @@ class CastViewSet(ModelViewSet):
     serializer_class = CastSerializer
 
 
+class GenreViewSet(ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = GenreSerializer
+
+
 class MovieViewSet(ModelViewSet):
     queryset = Movie.objects.all()
     serializer_class = MovieSerializer
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = MovieFilter
     pagination_class = DefaultPagination
-    search_fields = ['title', 'actors__full_name',
-                     'director__full_name', 'writer__full_name']
-    ordering_fields = ['title', 'actors__full_name',
-                       'director__full_name', 'writer__full_name']
+    search_fields = ['title', 'actors__full_name', 'director__full_name',
+                     'writer__full_name', 'genre__name', 'year', 'type']
+    ordering_fields = ['title', 'actors__full_name', 'director__full_name',
+                       'writer__full_name', 'genre__name', 'year', 'type', 'added_at']
 
 
 class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
@@ -56,8 +63,6 @@ class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gen
 
 
 class ListViewSet(ModelViewSet):
-    # queryset = List.objects.prefetch_related('items__movie').all()
-    # serializer_class = ListSerializer
     permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
@@ -88,10 +93,10 @@ class ListItemViwSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_class = ListItemFilter
     pagination_class = DefaultPagination
-    search_fields = ['movie__title', 'movie__actors__full_name',
-                     'movie__director__full_name', 'movie__writer__full_name']
-    ordering_fields = ['movie__title', 'movie__year',
-                       'movie__imdbrating', 'movie__type']
+    search_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
+                     'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type']
+    ordering_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
+                       'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type']
 
     http_method_names = ['get', 'post', 'patch', 'delete']
 
@@ -132,6 +137,7 @@ class FindMovie(APIView):
         values["actors"] = values["actors"].split(", ")
         values["director"] = values["director"].split(", ")
         values["writer"] = values["writer"].split(", ")
+        values["genre"] = values["genre"].split(", ")
         return Response(values)
 
 
