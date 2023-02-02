@@ -27,7 +27,8 @@ class Genre(models.Model):
 class Movie(models.Model):
     title = models.CharField(max_length=255)
     orginal_title = models.CharField(max_length=255, null=True, blank=True)
-    year = models.CharField(max_length=255, null=True, blank=True)
+    year = models.IntegerField(null=True, blank=True)
+    to_year = models.IntegerField(null=True, blank=True)
     rated = models.CharField(max_length=255, null=True, blank=True)
     released = models.CharField(max_length=255, null=True, blank=True)
     runtime = models.CharField(max_length=255, null=True, blank=True)
@@ -44,13 +45,13 @@ class Movie(models.Model):
     country = models.CharField(max_length=255, null=True, blank=True)
     awards = models.TextField(null=True, blank=True)
     poster = models.URLField(max_length=200, null=True, blank=True)
-    metascore = models.CharField(max_length=255, null=True, blank=True)
+    metascore = models.IntegerField(null=True, blank=True)
     imdbrating = models.DecimalField(
         max_digits=2, decimal_places=1, null=True, blank=True)
     imdbid = models.CharField(
         max_length=255, unique=True, null=True, blank=True)
     type = models.CharField(max_length=255, null=True, blank=True)
-    added_at = models.DateTimeField(auto_now_add=True)
+    added_at = models.DateField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.title
