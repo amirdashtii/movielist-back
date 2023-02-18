@@ -41,7 +41,7 @@ class MovieViewSet(ModelViewSet):
     search_fields = ['title', 'actors__full_name', 'director__full_name',
                      'writer__full_name', 'genre__name', 'year', 'type']
     ordering_fields = ['title', 'actors__full_name', 'director__full_name',
-                       'writer__full_name', 'genre__name', 'year', 'type', 'added_at']
+                       'writer__full_name', 'genre__name', 'year', 'type', 'added_at', 'imdbrating']
 
 
 class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, GenericViewSet):
@@ -64,6 +64,8 @@ class ProfileViewSet(CreateModelMixin, RetrieveModelMixin, UpdateModelMixin, Gen
 
 class ListViewSet(ModelViewSet):
     permission_classes = [IsAuthenticated]
+    filter_backends = [OrderingFilter]
+    ordering_fields = ['name', 'created_at']
 
     def create(self, request, *args, **kwargs):
         serializer = CreateListSerializer(
@@ -95,8 +97,8 @@ class ListItemViwSet(ModelViewSet):
     pagination_class = DefaultPagination
     search_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
                      'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type']
-    ordering_fields = ['movie__title', 'movie__actors__full_name', 'movie__director__full_name',
-                       'movie__writer__full_name', 'movie__genre__name', 'movie__year', 'movie__type', 'movie__added_at']
+    ordering_fields = ['movie__title', 'movie__year', 'movie__runtime',
+                       'movie__added_at', 'movie__imdbrating', 'movie__metascore']
 
     http_method_names = ['get', 'post', 'patch', 'delete']
 
@@ -117,10 +119,10 @@ class ListItemViwSet(ModelViewSet):
 class SearchMovie(APIView):
     def post(self, request):
         title = request.data['title']
-        year = request.data['year']
+        page = request.data['page']
         apikey = config.apikey
         url = 'http://www.omdbapi.com/'
-        payload = {'s': title, 'y': year, 'r': 'json', 'apikey': apikey}
+        payload = {'s': title, 'page': page, 'r': 'json', 'apikey': apikey}
         result = requests.get(url, params=payload).json()
         return Response(result)
 
@@ -138,6 +140,16 @@ class FindMovie(APIView):
         values["director"] = values["director"].split(", ")
         values["writer"] = values["writer"].split(", ")
         values["genre"] = values["genre"].split(", ")
+        if values["year"] == "N/A":
+            del values["year"]
+        elif values["type"] == "series":
+            values["to_year"] = values["year"].split("–")[1]
+            values["year"] = values["year"].split("–")[0]
+        if values["metascore"] == "N/A":
+            del values["metascore"]
+        if values["imdbrating"] == "N/A":
+            del values["imdbrating"]
+
         return Response(values)
 
 

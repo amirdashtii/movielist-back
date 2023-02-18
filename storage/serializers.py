@@ -52,7 +52,7 @@ class MovieSerializer(serializers.ModelSerializer):
     class Meta:
         model = Movie
         fields = ['id', 'title', 'year', 'actors', 'director', 'writer', 'orginal_title', 'rated', 'released', 'runtime',
-                  'genre', 'plot', 'language', 'country', 'awards', 'poster', 'metascore', 'imdbrating', 'imdbid', 'type']
+                  'genre', 'plot', 'language', 'country', 'awards', 'poster', 'metascore', 'imdbrating', 'imdbid', 'type', 'added_at']
 
 
 class ProfileSerializer(serializers.ModelSerializer):
@@ -128,7 +128,7 @@ class ListSerializer(serializers.ModelSerializer):
 
 class CreateListSerializer(serializers.Serializer):
     name = serializers.CharField(max_length=255)
-    description = serializers.CharField()
+    description = serializers.CharField(allow_blank=True)
 
     def save(self, **kwargs):
         profile = Profile.objects.get(
